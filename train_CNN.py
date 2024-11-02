@@ -7,39 +7,39 @@ from dataloader import load_data
 from model import MushroomCNN, ImprovedMushroomCNN
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
-# Configuración del dispositivo
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Usando GPU" if torch.cuda.is_available() else "Usando CPU")
 
-# Configura el directorio de datos
-data_dir = "Mushrooms"  # Cambia a la ruta correcta de tus datos
 
-# Cargar datos y clases
+data_dir = "Mushrooms"  
+
+
 train_loader, val_loader, test_loader, classes = load_data(data_dir, batch_size=32)
 
-# Selecciona el modelo a utilizar
-model_version = "improved"  # Cambia a "original" o "improved" para seleccionar el modelo
+
+model_version = "improved"  
 if model_version == "original":
     model = MushroomCNN(num_classes=len(classes)).to(device)
 elif model_version == "improved":
     model = ImprovedMushroomCNN(num_classes=len(classes)).to(device)
 
-# Inicializar la función de pérdida
+
 criterion = nn.CrossEntropyLoss()
 
-# Inicializar el optimizador AdamW con un mayor weight decay para regularización L2
+
 optimizer = optim.AdamW(model.parameters(), lr=0.0005, weight_decay=1e-3)
 
-# Configurar un programador de tasa de aprendizaje para reducir el learning rate cuando no mejora la pérdida de validación
+
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
 
-# Almacenar los valores de pérdida y precisión por epoch
+
 train_losses = []
 val_losses = []
 train_accuracies = []
 val_accuracies = []
 
-# Early stopping parameters
+
 best_val_loss = float('inf')
 patience = 10
 counter = 0
@@ -73,7 +73,6 @@ for epoch in range(epochs):
     train_losses.append(running_loss / len(train_loader))
     train_accuracies.append(100 * correct_train / total_train)
 
-    # Validation
     model.eval()
     val_loss = 0.0
     correct_val = 0
@@ -96,7 +95,7 @@ for epoch in range(epochs):
 
     print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_losses[-1]:.4f}, Val Loss: {val_loss:.4f}, Train Acc: {train_accuracies[-1]:.2f}%, Val Acc: {val_accuracies[-1]:.2f}%")
 
-    # Actualizar el scheduler con la pérdida de validación
+
     scheduler.step(val_loss)
 
     # Implementación de Early Stopping
@@ -111,7 +110,7 @@ for epoch in range(epochs):
 
 print("Training complete.")
 
-# Plotting training and validation loss
+
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label='Train Loss')
 plt.plot(val_losses, label='Validation Loss')
@@ -122,7 +121,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-# Plotting training and validation accuracy
+
 plt.figure(figsize=(10, 5))
 plt.plot(train_accuracies, label='Train Accuracy')
 plt.plot(val_accuracies, label='Validation Accuracy')
@@ -133,7 +132,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-# Confusion Matrix for Test Set
+
 all_preds = []
 all_labels = []
 

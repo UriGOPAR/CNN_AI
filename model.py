@@ -30,7 +30,7 @@ class ImprovedMushroomCNN(nn.Module):
     def __init__(self, num_classes):
         super(ImprovedMushroomCNN, self).__init__()
         
-        # Capas convolucionales con Batch Normalization
+        
         self.conv1 = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm2d(32),
@@ -57,7 +57,7 @@ class ImprovedMushroomCNN(nn.Module):
             nn.BatchNorm2d(512),
             nn.ReLU()
         )
-        # Nuevas capas convolucionales con Batch Normalization
+
         self.conv6 = nn.Sequential(
             nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm2d(512),
@@ -69,11 +69,11 @@ class ImprovedMushroomCNN(nn.Module):
             nn.ReLU()
         )
 
-        # Max Pooling y Dropout para reducir sobreajuste
+
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, padding=0)
         self.dropout = nn.Dropout(p=0.6)
 
-        # Ajuste del tamaño de la capa completamente conectada
+
         self.fc1 = nn.Linear(512 * 1 * 1, 2048)
         self.fc2 = nn.Linear(2048, 1024)
         self.fc3 = nn.Linear(1024, num_classes)

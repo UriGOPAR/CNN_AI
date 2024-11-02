@@ -27,17 +27,15 @@ def load_data(data_dir, batch_size=16):
     
     dataset = MyImageFolder(root=data_dir, transform=transform)
 
-    # Dividir el dataset en entrenamiento + validación (80%) y prueba (20%)
     train_val_size = int(0.8 * len(dataset))
     test_size = len(dataset) - train_val_size
     train_val_dataset, test_dataset = random_split(dataset, [train_val_size, test_size])
 
-    # Dividir entrenamiento + validación en entrenamiento (60%) y validación (20%)
     train_size = int(0.75 * len(train_val_dataset))
     val_size = len(train_val_dataset) - train_size
     train_dataset, val_dataset = random_split(train_val_dataset, [train_size, val_size])
 
-    # Crear DataLoader para cada conjunto
+
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
