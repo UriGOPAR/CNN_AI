@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.nn.functional as F
 from torch import nn, optim
@@ -7,45 +8,30 @@ from dataloader import load_data
 from model import MushroomCNN, ImprovedMushroomCNN
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
-
+# Configuración del dispositivo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Usando GPU" if torch.cuda.is_available() else "Usando CPU")
 
-
-data_dir = "Mushrooms"  
-
-
+data_dir = "Mushrooms"
 train_loader, val_loader, test_loader, classes = load_data(data_dir, batch_size=32)
 
-
-model_version = "improved"  
+model_version = "improved"
 if model_version == "original":
     model = MushroomCNN(num_classes=len(classes)).to(device)
 elif model_version == "improved":
     model = ImprovedMushroomCNN(num_classes=len(classes)).to(device)
 
-
 criterion = nn.CrossEntropyLoss()
-
-
-optimizer = optim.AdamW(model.parameters(), lr=0.0005, weight_decay=1e-3)
-
-
+optimizer = optim.AdamW(model.parameters(), lr=0.0005, weight_decay=1e-2)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
-
-
+ 
 train_losses = []
 val_losses = []
 train_accuracies = []
 val_accuracies = []
 
-
-best_val_loss = float('inf')
-patience = 10
-counter = 0
-
-# Training loop con early stopping
-epochs = 200
+# Training loop sin early stopping
+epochs = 40
 for epoch in range(epochs):
     model.train()
     running_loss = 0.0
@@ -95,22 +81,11 @@ for epoch in range(epochs):
 
     print(f"Epoch {epoch+1}/{epochs}, Train Loss: {train_losses[-1]:.4f}, Val Loss: {val_loss:.4f}, Train Acc: {train_accuracies[-1]:.2f}%, Val Acc: {val_accuracies[-1]:.2f}%")
 
-
     scheduler.step(val_loss)
-
-    # Implementación de Early Stopping
-    if val_loss < best_val_loss:
-        best_val_loss = val_loss
-        counter = 0
-    else:
-        counter += 1
-        if counter >= patience:
-            print("Early stopping activado")
-            break
 
 print("Training complete.")
 
-
+# Graficar pérdidas
 plt.figure(figsize=(10, 5))
 plt.plot(train_losses, label='Train Loss')
 plt.plot(val_losses, label='Validation Loss')
@@ -121,7 +96,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-
+# Graficar precisión
 plt.figure(figsize=(10, 5))
 plt.plot(train_accuracies, label='Train Accuracy')
 plt.plot(val_accuracies, label='Validation Accuracy')
@@ -132,7 +107,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-
+# Calcular matriz de confusión
 all_preds = []
 all_labels = []
 
@@ -158,3 +133,19 @@ disp = ConfusionMatrixDisplay(conf_matrix, display_labels=classes)
 disp.plot(cmap='Blues', xticks_rotation=45)
 plt.title('Confusion Matrix')
 plt.show()
+
+# Guardar el modelo entrenado (con reemplazo)
+model_path = "mushroom_model.pth"
+if os.path.exists(model_path):
+    os.remove(model_path)
+torch.save(model.state_dict(), model_path)
+print(f"Modelo guardado en {model_path}")
+
+# Guardar clases en "classes.txt" (con reemplazo)
+class_file = "classes.txt"
+if os.path.exists(class_file):
+    os.remove(class_file)
+with open(class_file, "w") as f:
+    for class_name in classes:
+        f.write(f"{class_name}\n")
+print(f"Clases guardadas en {class_file}")
